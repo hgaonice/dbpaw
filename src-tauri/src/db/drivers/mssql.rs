@@ -170,6 +170,7 @@ impl MssqlDriver {
             let tunnel = crate::ssh::start_ssh_tunnel(form)?;
             cfg_form.host = Some("127.0.0.1".to_string());
             cfg_form.port = Some(tunnel.local_port as i64);
+            cfg_form.ssl = Some(false); // Disable SSL when using SSH tunnel
             ssh_tunnel = Some(tunnel);
         }
 

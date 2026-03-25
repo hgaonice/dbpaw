@@ -40,7 +40,7 @@ fn percent_encode_query_value(value: &str) -> String {
             encoded.push(b as char);
         } else {
             encoded.push('%');
-            encoded.push_str(&format!("{:02X}", b));
+            encoded.push_str(&format!("{:02x}", b));
         }
     }
     encoded
@@ -175,6 +175,7 @@ impl MysqlDriver {
             let tunnel = crate::ssh::start_ssh_tunnel(form)?;
             dsn_form.host = Some("127.0.0.1".to_string());
             dsn_form.port = Some(tunnel.local_port as i64);
+            dsn_form.ssl = Some(false); // Disable SSL when using SSH tunnel
             ssh_tunnel = Some(tunnel);
         }
 
@@ -1207,5 +1208,13 @@ mod tests {
         assert_eq!(row.get("amount").and_then(|v| v.as_str()), Some("1234.56"));
         assert_eq!(row.get("name").and_then(|v| v.as_str()), Some("demo"));
         assert!(row.get("nullable").unwrap().is_null());
+    }
+
+    #[test]
+    fn test_percent_encode_query_value_special_chars() {
+        assert_eq!(percent_encode_query_value("pass#word*@123"), "pass%23word%2a%40123");
+        // Check that encoding is idempotent (double encoding doesn't change)
+        let encoded = percent_encode_query_value("pass#word*@123");
+        assert_eq!(percent_encode_query_value(&encoded), encoded);
     }
 }

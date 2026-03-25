@@ -42,7 +42,7 @@ fn percent_encode_query_value(value: &str) -> String {
             encoded.push(b as char);
         } else {
             encoded.push('%');
-            encoded.push_str(&format!("{:02X}", b));
+            encoded.push_str(&format!("{:02x}", b));
         }
     }
     encoded
@@ -144,6 +144,7 @@ impl PostgresDriver {
             let tunnel = crate::ssh::start_ssh_tunnel(form)?;
             dsn_form.host = Some("127.0.0.1".to_string());
             dsn_form.port = Some(tunnel.local_port as i64);
+            dsn_form.ssl = Some(false); // Disable SSL when using SSH tunnel
             ssh_tunnel = Some(tunnel);
         }
 
